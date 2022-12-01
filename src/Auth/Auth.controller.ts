@@ -27,7 +27,7 @@ export const login: RequestHandler = async (req, res, next) => {
     const privateKey = await fs.readFile(path.join(__dirname, '..', '..', 'private.key'), 'utf-8');
     
     // sign the token asynchronously by using callback
-    jwt.sign(user, privateKey, { algorithm: 'RS256' }, (err, token) => {
+    jwt.sign(user, privateKey, { algorithm: 'RS256', expiresIn: '12h' }, (err, token) => {
       if (err) {
         return res.status(500).json({
           err: err
