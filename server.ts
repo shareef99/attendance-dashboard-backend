@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import express from "express";
 import cors from 'cors';
 import authRouter from './src/Auth/Auth.route';
+import userRouter from './src/User/User.route';
 
 // load env variables in .env file
 dotenv.config();
@@ -16,6 +17,7 @@ app.use(cors()); // cors origin config
 
 // paths
 app.use('/auth', authRouter);
+app.use('/user', userRouter);
 
 app.get("/", (req, res) => {
   res.send("hello world");
