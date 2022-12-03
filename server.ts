@@ -3,9 +3,16 @@ import express from "express";
 import cors from 'cors';
 import authRouter from './src/Auth/Auth.route';
 import userRouter from './src/User/User.route';
+import mongoose from 'mongoose';
 
 // load env variables in .env file
 dotenv.config();
+
+// Database connection 
+mongoose.connect("mongodb://localhost:27017/testdb");
+const db = mongoose.connection;
+db.on('error', (error) => console.error(error));
+db.once('open', () => console.log('connected to database'));
 
 const app = express();
 const port = process.env.PORT || 3001;
