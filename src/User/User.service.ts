@@ -25,20 +25,15 @@ class UserService {
 
   async getUserById(id: string) {
     try {
-      const users = Users.findById("638d7ff870300faecbab89f2");
-      console.log(users);
-
-      return users;
+      const user = await Users.findById(id);
+      console.log(user);
+      return user;
     } catch (err: any) {
       return err;
     }
   }
 
   async createUser(user: userType) {
-    // userModel
-    // call the user modal
-    // save data in the DB
-    // Return data base operation result to controller
     try {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(user.password, salt);
@@ -53,9 +48,20 @@ class UserService {
     }
   }
 
-  updateUser() {}
+  async updateUser(id: string, userData: userType) {
+    try {
+      const user = await Users.findByIdAndUpdate(id, {
+        name: userData.name,
+      });
+      console.log(user);
+      return { error: false, message: "User Updated Successfully" };
+    } catch (err: any) {
+      console.log(err);
+      return { error: true, message: err.message };
+    }
+  }
 
-  deleteUser() {}
+  deleteUser(id: string) {}
 }
 
 export default UserService.getInstance();

@@ -25,9 +25,8 @@ export const getUsers: RequestHandler = async (req, res, next) => {
 };
 
 export const getUserById: RequestHandler = async (req, res, next) => {
-  // res.status(200).json({ message: req.params.id });
   try {
-    const user = userService.getUserById(req.params.id);
+    const user = await userService.getUserById(req.params.id);
     return res.status(200).json({ user });
   } catch (err) {
     return res.status(500).json({ message: err });
@@ -59,6 +58,22 @@ export const addUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const updateUser: RequestHandler = async (req, res, next) => {};
+export const updateUser: RequestHandler = async (req, res, next) => {
+  try {
+    // const isValid = validateReq(userSchema.safeParse(req.body));
+
+    // if (isValid.error) {
+    //   res.status(200).json({ message: isValid.value });
+    // }
+
+    const updateUserRes = await userService.updateUser(req.params.id, req.body);
+    if (updateUserRes.error) {
+      res.status(400).json({ message: updateUserRes.message });
+    }
+    res.status(200).json({ message: updateUserRes.message });
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 export const deleteUser: RequestHandler = async (req, res, next) => {};

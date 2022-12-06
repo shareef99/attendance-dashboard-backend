@@ -21,15 +21,17 @@ app.use(express.json()); // json payload parse
 app.use(cors()); // cors origin config
 
 // Routers
-// import authRouter from "./src/Auth/Auth.route";
+import authRouter from "./src/Auth/Auth.route";
 import userRouter from "./src/User/User.route";
+import employeeRouter from "./src/Employee/Employee.route";
 
 // paths
 app.get("/", (req, res) => {
   res.send("hello world");
 });
-// app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/employees", employeeRouter);
 
 app.listen(port, () => {
   console.log("server started on ", port);

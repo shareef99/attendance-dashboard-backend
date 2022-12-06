@@ -1,9 +1,9 @@
-// import express from "express";
-// import { login } from "./Auth.controller";
+import express from "express";
+import { signin } from "./Auth.controller";
 
-// // path: /auth
-// const authRouter = express.Router();
+// path: /auth
+const authRouter = express.Router();
 
-// authRouter.post("/login", login);
+authRouter.post("/signin", signin);
 
-// export default authRouter;
+export default authRouter;

@@ -15,13 +15,14 @@ export async function authenticateToken(
   // when there is no token
   if (!token) {
     return res.status(401).json({
-      message: "un-authorize",
+      message: "Token is missing",
     });
   }
 
   // reading the public key to verify token
   const publicKey = await fs.readFile(
-    path.join(__dirname, "..", "..", "public.key"), 'utf-8'
+    path.join(__dirname, "..", "..", "public.key"),
+    "utf-8"
   );
 
   jwt.verify(token, publicKey, (err, user) => {

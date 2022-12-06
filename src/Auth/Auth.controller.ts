@@ -1,45 +1,32 @@
-// import { RequestHandler } from "express";
-// import userData from '../../user-data.json';
-// import fs from 'fs/promises';
-// import jwt from 'jsonwebtoken';
-// import path from "path";
-// import _ from "lodash";
+import { RequestHandler } from "express";
+import _ from "lodash";
+import { z } from "zod";
+import { validateReq } from "../helpers/zod";
+import authService from "./Auth.service";
 
-// export const login: RequestHandler = async (req, res, next) => {
-//   try {
-//     // payload check
-//     const { email, password } = req.body;
-//     if (!email || !password) {
-//       return res.status(400).json({
-//         message: 'Invalid request'
-//       })
-//     }
+const signinSchema = z
+  .object({
+    emp_id: z.string(),
+    password: z.string(),
+  })
+  .strict();
 
-//     // whether user exists
-//     // const user = userData.find(user => user.email === email && user.password === password);
-//     if (_.isEmpty(user)) {
-//       return res.status(400).json({
-//         message: 'Invalid credentials'
-//       })
-//     }
+export type SigninType = z.infer<typeof signinSchema>;
 
-//     // read the private key
-//     const privateKey = await fs.readFile(path.join(__dirname, '..', '..', 'private.key'), 'utf-8');
+export const signin: RequestHandler = async (req, res) => {
+  try {
+    const validationRes = validateReq(signinSchema.safeParse(req.body));
+    if (validationRes.error) {
+      return res.status(400).json({
+        message: validationRes.value,
+      });
+    }
+    const signinRes = await authService.signin(validationRes.value);
 
-//     // sign the token asynchronously by using callback
-//     jwt.sign(user, privateKey, { algorithm: 'RS256', expiresIn: '12h' }, (err, token) => {
-//       if (err) {
-//         return res.status(500).json({
-//           err: err
-//         })
-//       }
-//       return res.status(200).json({
-//         token
-//       })
-//     });
-//   } catch (e) {
-//     return res.status(500).json({
-//       err: e
-//     })
-//   }
-// }
+    return res
+      .status(200)
+      .json({ token: signinRes.token, employee: signinRes.employee });
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+};
