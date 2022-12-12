@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs/promises";
 import { SigninType } from "./Auth.controller";
 import bcrypt from "bcrypt";
-import Employees from "../Employee/Employee.model";
+import Employees from "../employee/employee.model";
 
 class AuthService {
   private static authService: AuthService;

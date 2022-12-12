@@ -23,9 +23,10 @@ export const signin: RequestHandler = async (req, res) => {
     }
     const signinRes = await authService.signin(validationRes.value);
 
-    return res
-      .status(200)
-      .json({ token: signinRes.token, employee: signinRes.employee });
+    return res.status(200).json({
+      token: signinRes.token,
+      employee: signinRes.employee,
+    });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
   }

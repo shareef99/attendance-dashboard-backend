@@ -4,7 +4,8 @@ import {
   getEmployees,
   getEmployeeById,
   addEmployee,
-} from "./Employee.controller";
+  applyForLeave,
+} from "./employee.controller";
 
 // Path: /employee
 const employeeRouter = express.Router();
@@ -14,5 +15,7 @@ employeeRouter.get("/:id", authenticateToken, getEmployeeById);
 employeeRouter.post("/", authenticateToken, addEmployee);
 employeeRouter.put("/", authenticateToken);
 employeeRouter.delete("/", authenticateToken);
+
+employeeRouter.post("/apply-leave/:id", authenticateToken, applyForLeave);
 
 export default employeeRouter;

@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { validateReq } from "../helpers/zod";
-import employeeService from "./Employee.service";
+import employeeService from "./employee.service";
 import { z } from "zod";
 
 const employeeSchema = z
@@ -17,7 +17,19 @@ const employeeSchema = z
   })
   .strict();
 
+const leaveSchema = z
+  .object({
+    name: z.string(),
+    shortName: z.string(),
+    from: z.string(),
+    to: z.string(),
+    leaveDuration: z.string(),
+  })
+  .strict();
+
 export type EmployeeType = z.infer<typeof employeeSchema>;
+
+export type EmployeeLeaveType = z.infer<typeof leaveSchema>;
 
 export const getEmployees: RequestHandler = async (req, res, next) => {
   try {
@@ -56,5 +68,26 @@ export const addEmployee: RequestHandler = async (req, res) => {
     });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+export const applyForLeave: RequestHandler = async (req, res) => {
+  try {
+    const validationRes = validateReq(leaveSchema.safeParse(req.body));
+
+    if (validationRes.error) {
+      console.log("error from validating body", validationRes.value);
+
+      res.status(400).json({ message: validationRes });
+    }
+    console.log("validating body successful", validationRes.value);
+
+    await employeeService.applyForLeave(validationRes.value, req.params.id);
+
+    res.status(201).json({ message: "Apply for leave successfully." });
+  } catch (err: any) {
+    res
+      .status(500)
+      .json({ message: err.message || err || "something went wrong" });
   }
 };

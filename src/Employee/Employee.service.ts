@@ -1,9 +1,10 @@
 import jwt from "jsonwebtoken";
 import path from "path";
 import fs from "fs/promises";
-import { EmployeeType } from "./Employee.controller";
+import { EmployeeLeaveType, EmployeeType } from "./employee.controller";
 import bcrypt from "bcrypt";
-import Employees from "../Employee/Employee.model";
+import Employees from "./employee.model";
+import employeeModel from "./employee.model";
 
 class EmployeeService {
   private static employeeService: EmployeeService;
@@ -44,6 +45,19 @@ class EmployeeService {
         password: hashedPassword,
       });
       return { employee };
+    } catch (err: any) {
+      throw new Error(err.message);
+    }
+  }
+
+  async applyForLeave(data: EmployeeLeaveType, id: string) {
+    try {
+      await employeeModel.findOneAndUpdate(
+        { emp_id: id },
+        {
+          $push: { leaves: data },
+        }
+      );
     } catch (err: any) {
       throw new Error(err.message);
     }

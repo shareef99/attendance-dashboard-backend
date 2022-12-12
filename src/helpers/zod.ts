@@ -1,4 +1,4 @@
-import type { SafeParseReturnType, ZodObject } from "zod";
+import type { SafeParseReturnType } from "zod";
 
 export const validateReq = (
   data: SafeParseReturnType<any, any>

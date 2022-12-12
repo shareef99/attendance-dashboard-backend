@@ -47,6 +47,33 @@ const employeeSchema = new mongoose.Schema({
     type: Number,
     require: true,
   },
+  leaves: {
+    type: [
+      {
+        name: {
+          type: String,
+          required: true,
+        },
+        shortName: {
+          type: String,
+          required: true,
+        },
+        from: {
+          type: Date,
+          required: true,
+        },
+        to: {
+          type: Date,
+          required: true,
+        },
+        leaveDuration: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+    default: [],
+  },
 });
 
 export default mongoose.model("Employees", employeeSchema);
