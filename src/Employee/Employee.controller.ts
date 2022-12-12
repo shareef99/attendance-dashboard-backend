@@ -71,6 +71,16 @@ export const addEmployee: RequestHandler = async (req, res) => {
   }
 };
 
+export const deleteEmployee: RequestHandler = async (req, res) => {
+  try {
+    const id = req.query.id;
+    await employeeService.deleteEmployee(`${id}`);
+    res.status(200).json({ message: `Employee Deleted with ${id}` });
+  } catch (err: any) {
+    throw new Error(err.message);
+  }
+};
+
 export const applyForLeave: RequestHandler = async (req, res) => {
   try {
     const validationRes = validateReq(leaveSchema.safeParse(req.body));

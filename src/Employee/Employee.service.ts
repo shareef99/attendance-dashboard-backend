@@ -50,6 +50,14 @@ class EmployeeService {
     }
   }
 
+  async deleteEmployee(id: string) {
+    try {
+      await Employees.findByIdAndDelete(id);
+    } catch (err: any) {
+      throw new Error(err.message);
+    }
+  }
+
   async applyForLeave(data: EmployeeLeaveType, id: string) {
     try {
       await employeeModel.findOneAndUpdate(
