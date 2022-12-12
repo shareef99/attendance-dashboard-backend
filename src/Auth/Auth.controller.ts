@@ -22,10 +22,21 @@ export const signin: RequestHandler = async (req, res) => {
       });
     }
     const signinRes = await authService.signin(validationRes.value);
-
+    const employee = signinRes.employee;
     return res.status(200).json({
       token: signinRes.token,
-      employee: signinRes.employee,
+      employee: {
+        _id: employee._id,
+        name: employee.name,
+        empId: employee.emp_id,
+        email: employee.email,
+        mobileNo: employee.mobile_no,
+        joiningDate: employee.joining_date,
+        department: employee.department,
+        empType: employee.emp_type,
+        designation: employee.designation,
+        role: employee.role,
+      },
     });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
