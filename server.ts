@@ -25,6 +25,7 @@ import authRouter from "./src/Auth/Auth.route";
 import userRouter from "./src/User/User.route";
 import employeeRouter from "./src/employee/employee.route";
 import leaveRouter from "./src/leaves/leave.route";
+import designationRouter from "./src/designation/designation.route";
 
 // paths
 app.get("/", (req, res) => {
@@ -34,6 +35,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/employees", employeeRouter);
 app.use("/api/v1/leaves", leaveRouter);
+app.use("/api/v1/designations", designationRouter);
 
 app.listen(port, () => {
   console.log("server started on ", port);
