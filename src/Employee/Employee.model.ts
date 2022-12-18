@@ -141,7 +141,7 @@ const employeeSchema = new Schema({
           type: String,
           required: true,
         },
-        shortName: {
+        shortname: {
           type: String,
           required: true,
         },
@@ -151,6 +151,14 @@ const employeeSchema = new Schema({
         },
         to: {
           type: Date,
+          required: true,
+        },
+        leave_duration: {
+          type: String,
+          required: true,
+        },
+        status: {
+          type: String,
           required: true,
         },
       },

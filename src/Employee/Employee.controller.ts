@@ -21,10 +21,10 @@ const employeeSchema = z
 const leaveSchema = z
   .object({
     name: z.string(),
-    shortName: z.string(),
+    shortname: z.string(),
     from: z.string(),
     to: z.string(),
-    leaveDuration: z.string(),
+    leave_duration: z.string(),
   })
   .strict();
 
@@ -177,10 +177,12 @@ export const updateSSCDetails: RequestHandler = async (req, res) => {
 export const deleteEmployee: RequestHandler = async (req, res) => {
   try {
     const id = req.query.id;
-    await employeeService.deleteEmployee(`${id}`);
+    await employeeModel.findOneAndDelete({ emp_id: id });
     res.status(200).json({ message: `Employee Deleted with ${id}` });
   } catch (err: any) {
-    throw new Error(err.message);
+    return res
+      .status(500)
+      .json({ message: err.message || "something went wrong" });
   }
 };
 
@@ -189,18 +191,21 @@ export const applyForLeave: RequestHandler = async (req, res) => {
     const validationRes = validateReq(leaveSchema.safeParse(req.body));
 
     if (validationRes.error) {
-      console.log("error from validating body", validationRes.value);
-
       res.status(400).json({ message: validationRes });
     }
-    console.log("validating body successful", validationRes.value);
 
-    await employeeService.applyForLeave(validationRes.value, req.params.id);
+    const id = req.query.id?.toString();
 
+    await employeeModel.findOneAndUpdate(
+      { emp_id: id },
+      {
+        $push: { leaves: { ...validationRes.value, status: "pending-hod" } },
+      }
+    );
     res.status(201).json({ message: "Apply for leave successfully." });
   } catch (err: any) {
-    res
+    return res
       .status(500)
-      .json({ message: err.message || err || "something went wrong" });
+      .json({ message: err.message || "something went wrong" });
   }
 };

@@ -24,8 +24,13 @@ employeeRouter.get(
 employeeRouter.post("/", authenticateToken, addEmployee);
 employeeRouter.put("/", authenticateToken);
 employeeRouter.put("/qualification", authenticateToken, updateSSCDetails);
-employeeRouter.delete("/", authenticateToken, deleteEmployee);
+employeeRouter.delete("/", authenticateToken, checkIdExists, deleteEmployee);
 
-employeeRouter.post("/apply-leave/:id", authenticateToken, applyForLeave);
+employeeRouter.post(
+  "/apply-leave",
+  authenticateToken,
+  checkIdExists,
+  applyForLeave
+);
 
 export default employeeRouter;
