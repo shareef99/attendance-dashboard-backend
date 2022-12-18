@@ -1,15 +1,15 @@
-import mongoose from "mongoose";
+import { Schema, model } from "mongoose";
 
-const leaveSchema = new mongoose.Schema({
+const leaveSchema = new Schema({
   name: {
     type: String,
     required: true,
   },
-  shortName: {
+  shortname: {
     type: String,
     required: true,
   },
-  leaveType: {
+  leave_type: {
     type: String,
     required: true,
   },
@@ -17,14 +17,6 @@ const leaveSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  eligibility: {
-    type: Boolean,
-    required: true,
-  },
-  uploadDocument: {
-    type: Boolean,
-    required: true,
-  },
 });
 
-export default mongoose.model("Leaves", leaveSchema);
+export default model("Leaves", leaveSchema);

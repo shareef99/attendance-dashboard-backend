@@ -1,5 +1,6 @@
 import express from "express";
 import { authenticateToken } from "../Middleware/authenticateToken";
+import { checkIdExists } from "../Middleware/checkIdExists";
 import {
   createLeave,
   deleteLeave,
@@ -13,8 +14,8 @@ const leaveRouter = express.Router();
 
 leaveRouter.post("/", authenticateToken, createLeave);
 leaveRouter.get("/", authenticateToken, getLeaves);
-leaveRouter.get("/:id", authenticateToken, getLeave);
+leaveRouter.get("/byId", authenticateToken, checkIdExists, getLeave);
 leaveRouter.put("/", authenticateToken);
-leaveRouter.delete("/:id", authenticateToken, deleteLeave);
+leaveRouter.delete("/", authenticateToken, checkIdExists, deleteLeave);
 
 export default leaveRouter;
