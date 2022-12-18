@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import { Schema, model } from "mongoose";
 
-const personalDetailsSchema = new mongoose.Schema({
+const personalDetailsSchema = new Schema({
   gender: {
     type: String,
     enum: {
@@ -20,7 +20,7 @@ const personalDetailsSchema = new mongoose.Schema({
   RTGSNo: String,
 });
 
-const qualificationDetailsSchema = new mongoose.Schema({
+const qualificationDetailsSchema = new Schema({
   ssc: {
     board: String,
     yearOfPassing: Number,
@@ -60,7 +60,7 @@ const qualificationDetailsSchema = new mongoose.Schema({
   ],
 });
 
-const experienceSchema = new mongoose.Schema({
+const experienceSchema = new Schema({
   institute: String,
   type: String,
   from: Date,
@@ -70,7 +70,7 @@ const experienceSchema = new mongoose.Schema({
   salary: Number,
 });
 
-const familySchema = new mongoose.Schema({
+const familySchema = new Schema({
   memberName: String,
   relation: String,
   dob: Date,
@@ -80,11 +80,18 @@ const familySchema = new mongoose.Schema({
   insuranceNo: String,
 });
 
-const employeeSchema = new mongoose.Schema({
+const otherDetailsSchema = new Schema({
+  religion: String,
+  category: String,
+  cast: String,
+  bloodGroup: String,
+  emergencyContactNo: Number,
+});
+
+const employeeSchema = new Schema({
   name: {
     type: String,
     require: true,
-    maxLength: 40,
     trim: true,
   },
   emp_id: {
@@ -146,18 +153,15 @@ const employeeSchema = new mongoose.Schema({
           type: Date,
           required: true,
         },
-        leaveDuration: {
-          type: String,
-          required: true,
-        },
       },
     ],
     default: [],
   },
-  personalDetails: personalDetailsSchema,
-  qualificationDetails: qualificationDetailsSchema,
+  personalDetails: { type: personalDetailsSchema, default: {} },
+  qualificationDetails: { type: qualificationDetailsSchema, default: {} },
   experience: [experienceSchema],
   familyDetails: [familySchema],
+  otherDetails: { type: otherDetailsSchema, default: {} },
 });
 
-export default mongoose.model("Employees", employeeSchema);
+export default model("Employees", employeeSchema);

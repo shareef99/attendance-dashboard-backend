@@ -1,10 +1,12 @@
-import jwt from "jsonwebtoken";
-import path from "path";
-import fs from "fs/promises";
-import { EmployeeLeaveType, EmployeeType } from "./employee.controller";
+import {
+  BoardType,
+  EmployeeLeaveType,
+  EmployeeType,
+} from "./employee.controller";
 import bcrypt from "bcrypt";
 import Employees from "./employee.model";
 import employeeModel from "./employee.model";
+import _ from "lodash";
 
 class EmployeeService {
   private static employeeService: EmployeeService;
@@ -16,24 +18,6 @@ class EmployeeService {
       this.employeeService = new EmployeeService();
     }
     return this.employeeService;
-  }
-
-  async getEmployees() {
-    try {
-      const employees = await Employees.find();
-      return employees;
-    } catch (err: any) {
-      throw new Error(err);
-    }
-  }
-
-  async getEmployeeById(id: string) {
-    try {
-      const employee = await Employees.findById(id);
-      return employee;
-    } catch (err: any) {
-      throw new Error(err);
-    }
   }
 
   async addEmployee(data: EmployeeType) {

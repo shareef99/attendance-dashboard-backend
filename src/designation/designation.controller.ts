@@ -27,7 +27,6 @@ export const createDesignation: RequestHandler = async (req, res) => {
         message: validationRes.value,
       });
     }
-
     await designationService.createDesignation(validationRes.value);
     res.status(201).json({ message: "Designation Created" });
   } catch (err: any) {

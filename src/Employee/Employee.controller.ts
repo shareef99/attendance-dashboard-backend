@@ -1,7 +1,8 @@
+import { validateReq } from "./../helpers/zod";
 import { RequestHandler } from "express";
-import { validateReq } from "../helpers/zod";
 import employeeService from "./employee.service";
 import { z } from "zod";
+import employeeModel from "./employee.model";
 
 const employeeSchema = z
   .object({
@@ -27,14 +28,53 @@ const leaveSchema = z
   })
   .strict();
 
+const boardSchema = z
+  .object({
+    board: z.string(),
+    yop: z.number(),
+    percentage: z.number(),
+  })
+  .strict();
+
+export type BoardType = z.infer<typeof boardSchema>;
+
 export type EmployeeType = z.infer<typeof employeeSchema>;
 
 export type EmployeeLeaveType = z.infer<typeof leaveSchema>;
 
 export const getEmployees: RequestHandler = async (req, res, next) => {
   try {
-    const employees = await employeeService.getEmployees();
-    return res.status(200).json({ employees });
+    const employees = await employeeModel.find().select("-password");
+    const structuredEmployees = employees.map((employee) => ({
+      _id: employee._id,
+      emp_id: employee.emp_id,
+      department: employee.department,
+      designation: employee.designation,
+      name: employee.name,
+      email: employee.email,
+      mobile_no: employee.mobile_no,
+      joining_date: employee.joining_date,
+      emp_type: employee.emp_type,
+    }));
+    return res.status(200).json({ employees: structuredEmployees });
+  } catch (err: any) {
+    return res.status(500).json({
+      err: err.message || "Something went wrong.",
+    });
+  }
+};
+
+export const getEmployeesByDepartment: RequestHandler = async (req, res) => {
+  try {
+    const department = req.query.department?.toString();
+    if (!department) {
+      return res.status(400).json({ message: "department is missing" });
+    }
+    const employees = await employeeModel
+      .find({ department: department })
+      .select("-password");
+
+    return res.status(200).json({ employees: employees });
   } catch (err: any) {
     return res.status(500).json({
       err: err.message || "Something went wrong.",
@@ -44,7 +84,18 @@ export const getEmployees: RequestHandler = async (req, res, next) => {
 
 export const getEmployeeById: RequestHandler = async (req, res, next) => {
   try {
-    const employee = await employeeService.getEmployeeById(req.params.id);
+    const id = req.query.id?.toString();
+
+    const employee = await employeeModel
+      .findOne({ emp_id: id })
+      .select("-password");
+
+    if (!employee) {
+      return res
+        .status(400)
+        .json({ message: "Employee doesn't exists with the id: " + id });
+    }
+
     return res.status(200).json({ employee });
   } catch (err: any) {
     return res.status(500).json({
@@ -66,6 +117,58 @@ export const addEmployee: RequestHandler = async (req, res) => {
       message: "Employee created successfully",
       employee: employeeRes.employee,
     });
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const updateSSCDetails: RequestHandler = async (req, res) => {
+  try {
+    const validationRes = validateReq(boardSchema.safeParse(req.body));
+    if (validationRes.error) {
+      return res.status(400).json({
+        message: validationRes.value,
+      });
+    }
+
+    if (!req.query.id) {
+      return res.status(400).json({ message: "Employee Id is missing" });
+    }
+
+    const id = req.query.id.toString();
+    const data = validationRes.value;
+
+    if (req.query.type === "ssc") {
+      await employeeModel.findOneAndUpdate({
+        emp_id: id,
+        $set: {
+          "qualificationDetails.ssc": {
+            board: data.board,
+            yearOfPassing: data.yop,
+            percentage: data.percentage,
+          },
+        },
+      });
+      return res.status(204).json({
+        message: "SSC detail update successfully",
+      });
+    }
+
+    if (req.query.type === "inter") {
+      await employeeModel.findOneAndUpdate({
+        emp_id: id,
+        $set: {
+          "qualificationDetails.inter": {
+            board: data.board,
+            yearOfPassing: data.yop,
+            percentage: data.percentage,
+          },
+        },
+      });
+      return res.status(204).json({
+        message: "Inter detail update successfully",
+      });
+    }
   } catch (err: any) {
     res.status(500).json({ message: err.message });
   }

@@ -2,7 +2,11 @@ import { RequestHandler } from "express";
 import _ from "lodash";
 import { z } from "zod";
 import { validateReq } from "../helpers/zod";
-import authService from "./Auth.service";
+import jwt from "jsonwebtoken";
+import path from "path";
+import fs from "fs/promises";
+import bcrypt from "bcrypt";
+import Employees from "../employee/employee.model";
 
 const signinSchema = z
   .object({
@@ -21,19 +25,51 @@ export const signin: RequestHandler = async (req, res) => {
         message: validationRes.value,
       });
     }
-    const signinRes = await authService.signin(validationRes.value);
-    const employee = signinRes.employee;
+
+    const data = validationRes.value as SigninType;
+
+    const employee = await Employees.findOne({ emp_id: data.emp_id });
+
+    if (!employee) {
+      return res.status(400).json({
+        message: "Invalid Employee ID",
+      });
+    }
+
+    const isValidPassword = await bcrypt.compare(
+      data.password,
+      employee.password!
+    );
+
+    if (!isValidPassword) {
+      return res.status(400).json({
+        message: "Invalid Password",
+      });
+    }
+
+    // read the private key
+    const privateKey = await fs.readFile(
+      path.join(__dirname, "..", "..", "private.key"),
+      "utf-8"
+    );
+
+    const token = jwt.sign(
+      { id: data.emp_id, password: data.emp_id },
+      privateKey,
+      { algorithm: "RS256", expiresIn: "12h" }
+    );
+
     return res.status(200).json({
-      token: signinRes.token,
+      token: token,
       employee: {
         _id: employee._id,
         name: employee.name,
-        empId: employee.emp_id,
+        emp_id: employee.emp_id,
         email: employee.email,
-        mobileNo: employee.mobile_no,
-        joiningDate: employee.joining_date,
+        mobile_no: employee.mobile_no,
+        joining_date: employee.joining_date,
         department: employee.department,
-        empType: employee.emp_type,
+        emp_type: employee.emp_type,
         designation: employee.designation,
         role: employee.role,
       },
