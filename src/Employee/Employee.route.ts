@@ -14,6 +14,7 @@ import {
   approveLeaveByPrincipal,
   getEmployeesWithUpcomingLeaves,
   updatePersonalDetails,
+  getCurrentEmployee,
 } from "./employee.controller";
 
 // Path: /employees
@@ -21,6 +22,7 @@ const employeeRouter = express.Router();
 
 employeeRouter.get("/", authenticateToken, getEmployees);
 employeeRouter.get("/byId", authenticateToken, checkIdExists, getEmployeeById);
+employeeRouter.get("/current", authenticateToken, getCurrentEmployee);
 employeeRouter.get(
   "/byDepartment",
   authenticateToken,

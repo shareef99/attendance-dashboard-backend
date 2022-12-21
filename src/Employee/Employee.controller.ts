@@ -70,7 +70,7 @@ export type EmployeeLeaveType = z.infer<typeof leaveSchema>;
 
 export type PersonalDetailsType = z.infer<typeof personalSchema>;
 
-export const getEmployees: RequestHandler = async (req, res, next) => {
+export const getEmployees: RequestHandler = async (req, res) => {
   try {
     const employees = await employeeModel.find().select("-password");
     const structuredEmployees = employees.map((employee) => ({
@@ -108,7 +108,7 @@ export const getEmployeesByDepartment: RequestHandler = async (req, res) => {
   }
 };
 
-export const getEmployeeById: RequestHandler = async (req, res, next) => {
+export const getEmployeeById: RequestHandler = async (req, res) => {
   try {
     const id = req.query.id?.toString();
 
@@ -127,6 +127,18 @@ export const getEmployeeById: RequestHandler = async (req, res, next) => {
     return res.status(500).json({
       err: err.message || "Something went wrong.",
     });
+  }
+};
+
+export const getCurrentEmployee: RequestHandler = async (req, res) => {
+  try {
+    const user = req.user;
+    const employee = await employeeModel
+      .findOne({ emp_id: user.id })
+      .select("-password");
+    return res.status(200).json({ employee });
+  } catch (err: any) {
+    res.status(500).json({ message: err.message || "Something went wrong" });
   }
 };
 
