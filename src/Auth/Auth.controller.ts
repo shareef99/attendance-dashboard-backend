@@ -54,7 +54,12 @@ export const signin: RequestHandler = async (req, res) => {
     );
 
     const token = jwt.sign(
-      { id: data.emp_id, password: data.emp_id },
+      {
+        id: data.emp_id,
+        password: data.emp_id,
+        role: employee.role,
+        department: employee.department,
+      },
       privateKey,
       { algorithm: "RS256", expiresIn: "12h" }
     );

@@ -209,3 +209,176 @@ export const applyForLeave: RequestHandler = async (req, res) => {
       .json({ message: err.message || "something went wrong" });
   }
 };
+
+export const getEmployeesWithLeaves: RequestHandler = async (req, res) => {
+  try {
+    const user = req.user;
+    const allEmployees = await employeeModel
+      .find({ department: user.department })
+      .select("-password -personalDetails -qualificationDetails -otherDetails");
+    let employeesWithLeaves: any[] = [];
+
+    allEmployees
+      .filter((employee) => employee.leaves.length > 0)
+      .forEach((employee) =>
+        employee.leaves.forEach((leave) =>
+          employeesWithLeaves.push({
+            // @ts-ignore
+            leave_id: leave._id,
+            emp_id: employee.emp_id,
+            name: employee.name,
+            department: employee.department,
+            from: leave.from,
+            to: leave.to,
+            leave_duration: leave.leave_duration,
+            status: leave.status,
+          })
+        )
+      );
+    return res.status(200).json({ employees: employeesWithLeaves });
+  } catch (err: any) {
+    return res
+      .status(500)
+      .json({ message: err.message || "something went wrong" });
+  }
+};
+
+export const approveLeaveByHod: RequestHandler = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (user.role > 2) {
+      return res
+        .status(400)
+        .json({ message: "You don't have permission to approve the leave" });
+    }
+
+    const emp_id = req.query.emp_id?.toString();
+    const leave_id = req.query.leave_id?.toString();
+
+    if (!emp_id) {
+      return res.status(400).json({ message: "Emp Id is missing" });
+    }
+    if (!leave_id) {
+      return res.status(400).json({ message: "Leave Id is missing" });
+    }
+
+    const employee = await employeeModel.findOne({
+      emp_id: emp_id,
+    });
+
+    if (!employee) {
+      return res
+        .status(400)
+        .json({ message: "Can't find emp with id " + emp_id });
+    }
+
+    const updatedLeaves = employee.leaves.map((leave) =>
+      // Every MongoDb object has _id property. IDK why TypeScript is screaming it doesn't have _id property.
+      // Must use ==, because mongodb _id is not string but leave_id is string
+      // @ts-ignore
+      leave._id == leave_id
+        ? {
+            name: leave.name,
+            shortname: leave.shortname,
+            from: leave.from,
+            to: leave.to,
+            leave_duration: leave.leave_duration,
+            status: "pending-principal",
+          }
+        : {
+            name: leave.name,
+            shortname: leave.shortname,
+            from: leave.from,
+            to: leave.to,
+            leave_duration: leave.leave_duration,
+            status: leave.status,
+          }
+    );
+
+    await employeeModel.findOneAndUpdate(
+      { emp_id: emp_id },
+      {
+        $set: {
+          leaves: updatedLeaves,
+        },
+      }
+    );
+
+    return res.status(400).json({ message: "Approved by HOD" });
+  } catch (err: any) {
+    return res
+      .status(500)
+      .json({ message: err.message || "Something went wrong" });
+  }
+};
+
+export const approveLeaveByPrincipal: RequestHandler = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (user.role !== 1) {
+      return res
+        .status(400)
+        .json({ message: "You don't have permission to approve the leave" });
+    }
+
+    const emp_id = req.query.emp_id?.toString();
+    const leave_id = req.query.leave_id?.toString();
+
+    if (!emp_id) {
+      return res.status(400).json({ message: "Emp Id is missing" });
+    }
+    if (!leave_id) {
+      return res.status(400).json({ message: "Leave Id is missing" });
+    }
+
+    const employee = await employeeModel.findOne({
+      emp_id: emp_id,
+    });
+
+    if (!employee) {
+      return res
+        .status(400)
+        .json({ message: "Can't find emp with id " + emp_id });
+    }
+
+    const updatedLeaves = employee.leaves.map((leave) =>
+      // Every MongoDb object has _id property. IDK why TypeScript is screaming it doesn't have _id property.
+      // Must use ==, because mongodb _id is not string but leave_id is string
+      // @ts-ignore
+      leave._id == leave_id
+        ? {
+            name: leave.name,
+            shortname: leave.shortname,
+            from: leave.from,
+            to: leave.to,
+            leave_duration: leave.leave_duration,
+            status: "approved",
+          }
+        : {
+            name: leave.name,
+            shortname: leave.shortname,
+            from: leave.from,
+            to: leave.to,
+            leave_duration: leave.leave_duration,
+            status: leave.status,
+          }
+    );
+
+    await employeeModel.findOneAndUpdate(
+      { emp_id: emp_id },
+      {
+        $set: {
+          leaves: updatedLeaves,
+        },
+      }
+    );
+
+    return res.status(400).json({ message: "Approved by Principal" });
+  } catch (err: any) {
+    return res
+      .status(500)
+      .json({ message: err.message || "Something went wrong" });
+  }
+};

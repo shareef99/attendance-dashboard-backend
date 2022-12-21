@@ -9,6 +9,9 @@ import {
   deleteEmployee,
   updateSSCDetails,
   getEmployeesByDepartment,
+  getEmployeesWithLeaves,
+  approveLeaveByHod,
+  approveLeaveByPrincipal,
 } from "./employee.controller";
 
 // Path: /employees
@@ -21,16 +24,28 @@ employeeRouter.get(
   authenticateToken,
   getEmployeesByDepartment
 );
-employeeRouter.post("/", authenticateToken, addEmployee);
-employeeRouter.put("/", authenticateToken);
-employeeRouter.put("/qualification", authenticateToken, updateSSCDetails);
-employeeRouter.delete("/", authenticateToken, checkIdExists, deleteEmployee);
+employeeRouter.get("/withLeaves", authenticateToken, getEmployeesWithLeaves);
 
+employeeRouter.post("/", authenticateToken, addEmployee);
 employeeRouter.post(
   "/apply-leave",
   authenticateToken,
   checkIdExists,
   applyForLeave
 );
+
+employeeRouter.put("/qualification", authenticateToken, updateSSCDetails);
+employeeRouter.put(
+  "/approve-leave/byHod",
+  authenticateToken,
+  approveLeaveByHod
+);
+employeeRouter.put(
+  "/approve-leave/byPrincipal",
+  authenticateToken,
+  approveLeaveByPrincipal
+);
+
+employeeRouter.delete("/", authenticateToken, checkIdExists, deleteEmployee);
 
 export default employeeRouter;
