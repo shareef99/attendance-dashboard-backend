@@ -37,11 +37,38 @@ const boardSchema = z
   })
   .strict();
 
+const personalSchema = z
+  .object({
+    emp_id: z.string(),
+    name: z.string(),
+    gender: z.enum(["male", "female", "others"]).optional(),
+    dob: z.string().optional(),
+    married: z.boolean().optional(),
+    marriedDate: z.string().optional(),
+    designation: z.string(),
+    department: z.string(),
+    address: z.string().optional(),
+    mobile_no: z.number(),
+    email: z.string().email(),
+    joining_date: z.string(),
+    bankAccountNo: z.number().optional(),
+    bankName: z.string().optional(),
+    IFSCCode: z.string().optional(),
+    pancardNo: z.string().optional(),
+    pfNo: z.string().optional(),
+    aadharNo: z.number().optional(),
+    RTGSNo: z.string().optional(),
+    emp_type: z.string(),
+  })
+  .strict();
+
 export type BoardType = z.infer<typeof boardSchema>;
 
 export type EmployeeType = z.infer<typeof employeeSchema>;
 
 export type EmployeeLeaveType = z.infer<typeof leaveSchema>;
+
+export type PersonalDetailsType = z.infer<typeof personalSchema>;
 
 export const getEmployees: RequestHandler = async (req, res, next) => {
   try {
@@ -118,6 +145,61 @@ export const addEmployee: RequestHandler = async (req, res) => {
     });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+export const updatePersonalDetails: RequestHandler = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (user.role > 2) {
+      return res.status(400).json({
+        message: "You don't have permission to update personal details ",
+      });
+    }
+
+    const validationRes = validateReq(personalSchema.safeParse(req.body));
+
+    if (validationRes.error) {
+      return res.status(400).json({
+        message: validationRes.value,
+      });
+    }
+
+    const data = validationRes.value as PersonalDetailsType;
+
+    await employeeModel.findOneAndUpdate(
+      { emp_id: data.emp_id },
+      {
+        $set: {
+          name: data.name,
+          email: data.email,
+          department: data.department,
+          designation: data.designation,
+          mobile_no: data.mobile_no,
+          joining_date: data.joining_date,
+          "personalDetails.gender": data.gender,
+          "personalDetails.dob": data.dob,
+          "personalDetails.married": data.married,
+          "personalDetails.marriedDate": data.marriedDate,
+          "personalDetails.bankAccountNo": data.bankAccountNo,
+          "personalDetails.bankName": data.bankName,
+          "personalDetails.IFSCCode": data.IFSCCode,
+          "personalDetails.pancardNo": data.pancardNo,
+          "personalDetails.pfNo": data.pfNo,
+          "personalDetails.aadharNo": data.aadharNo,
+          "personalDetails.RTGSNo": data.RTGSNo,
+        },
+      }
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Personal Details updated successfully" });
+  } catch (err: any) {
+    return res
+      .status(500)
+      .json({ message: err.message || "Something went wrong" });
   }
 };
 

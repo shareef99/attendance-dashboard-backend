@@ -16,7 +16,7 @@ const personalDetailsSchema = new Schema({
   IFSCCode: String,
   pancardNo: String,
   pfNo: String,
-  aadharNo: String,
+  aadharNo: Number,
   RTGSNo: String,
 });
 

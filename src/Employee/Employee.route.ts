@@ -13,6 +13,7 @@ import {
   approveLeaveByHod,
   approveLeaveByPrincipal,
   getEmployeesWithUpcomingLeaves,
+  updatePersonalDetails,
 } from "./employee.controller";
 
 // Path: /employees
@@ -40,6 +41,11 @@ employeeRouter.post(
   applyForLeave
 );
 
+employeeRouter.put(
+  "/personalDetails",
+  authenticateToken,
+  updatePersonalDetails
+);
 employeeRouter.put("/qualification", authenticateToken, updateSSCDetails);
 employeeRouter.put(
   "/approve-leave/byHod",
