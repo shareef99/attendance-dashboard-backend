@@ -12,6 +12,7 @@ import {
   getEmployeesWithLeaves,
   approveLeaveByHod,
   approveLeaveByPrincipal,
+  getEmployeesWithUpcomingLeaves,
 } from "./employee.controller";
 
 // Path: /employees
@@ -25,6 +26,11 @@ employeeRouter.get(
   getEmployeesByDepartment
 );
 employeeRouter.get("/withLeaves", authenticateToken, getEmployeesWithLeaves);
+employeeRouter.get(
+  "/withUpcomingLeaves",
+  authenticateToken,
+  getEmployeesWithUpcomingLeaves
+);
 
 employeeRouter.post("/", authenticateToken, addEmployee);
 employeeRouter.post(

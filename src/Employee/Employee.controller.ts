@@ -3,6 +3,7 @@ import { RequestHandler } from "express";
 import employeeService from "./employee.service";
 import { z } from "zod";
 import employeeModel from "./employee.model";
+import { leaveType } from "../leaves/leave.controller";
 
 const employeeSchema = z
   .object({
@@ -66,12 +67,10 @@ export const getEmployees: RequestHandler = async (req, res, next) => {
 
 export const getEmployeesByDepartment: RequestHandler = async (req, res) => {
   try {
-    const department = req.query.department?.toString();
-    if (!department) {
-      return res.status(400).json({ message: "department is missing" });
-    }
+    const user = req.user;
+
     const employees = await employeeModel
-      .find({ department: department })
+      .find({ department: user.department })
       .select("-password");
 
     return res.status(200).json({ employees: employees });
@@ -240,6 +239,53 @@ export const getEmployeesWithLeaves: RequestHandler = async (req, res) => {
     return res
       .status(500)
       .json({ message: err.message || "something went wrong" });
+  }
+};
+
+export const getEmployeesWithUpcomingLeaves: RequestHandler = async (
+  req,
+  res
+) => {
+  try {
+    const user = req.user;
+
+    const employees = await employeeModel
+      .find({ department: user.department })
+      .select("-password");
+
+    // I don't want to use any but sir wants the project to be end as soon as possible so I have no choice
+    // Don't blame the developer blame Bari sir
+    const employeesWithUpcomingLeaves: Array<{
+      emp_id: string;
+      name: string;
+      leave: {
+        name: string;
+        status: string;
+        shortname: string;
+        from: Date;
+        to: Date;
+        leave_duration: string;
+      };
+    }> = [];
+
+    employees.forEach((employee) => {
+      for (const leave of employee.leaves) {
+        if (+leave.from > Date.now()) {
+          employeesWithUpcomingLeaves.push({
+            emp_id: employee.emp_id!,
+            name: employee.name!,
+            leave,
+          });
+          break;
+        }
+      }
+    });
+
+    return res.status(200).json({ employees: employeesWithUpcomingLeaves });
+  } catch (err: any) {
+    return res.status(500).json({
+      err: err.message || "Something went wrong.",
+    });
   }
 };
 
