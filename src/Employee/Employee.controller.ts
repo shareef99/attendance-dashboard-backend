@@ -32,7 +32,7 @@ const leaveSchema = z
 const boardSchema = z
   .object({
     board: z.string(),
-    yop: z.number(),
+    yearOfPassing: z.number(),
     percentage: z.number(),
   })
   .strict();
@@ -217,41 +217,51 @@ export const updateSSCDetails: RequestHandler = async (req, res) => {
     }
 
     const id = req.query.id.toString();
-    const data = validationRes.value;
+    const data = validationRes.value as BoardType;
+
+    console.log(data);
 
     if (req.query.type === "ssc") {
-      await employeeModel.findOneAndUpdate({
-        emp_id: id,
-        $set: {
-          "qualificationDetails.ssc": {
-            board: data.board,
-            yearOfPassing: data.yop,
-            percentage: data.percentage,
+      console.log(id);
+      await employeeModel.findOneAndUpdate(
+        { emp_id: id },
+        {
+          $set: {
+            "qualificationDetails.ssc": {
+              board: data.board,
+              yearOfPassing: data.yearOfPassing,
+              percentage: data.percentage,
+            },
           },
-        },
-      });
+        }
+      );
       return res.status(204).json({
         message: "SSC detail update successfully",
       });
     }
 
     if (req.query.type === "inter") {
-      await employeeModel.findOneAndUpdate({
-        emp_id: id,
-        $set: {
-          "qualificationDetails.inter": {
-            board: data.board,
-            yearOfPassing: data.yop,
-            percentage: data.percentage,
-          },
+      console.log(id);
+      await employeeModel.findOneAndUpdate(
+        {
+          emp_id: id,
         },
-      });
+        {
+          $set: {
+            "qualificationDetails.inter": {
+              board: data.board,
+              yearOfPassing: data.yearOfPassing,
+              percentage: data.percentage,
+            },
+          },
+        }
+      );
       return res.status(204).json({
         message: "Inter detail update successfully",
       });
     }
   } catch (err: any) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 };
 
