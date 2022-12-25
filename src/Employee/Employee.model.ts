@@ -18,6 +18,7 @@ const personalDetailsSchema = new Schema({
   pfNo: String,
   aadharNo: Number,
   RTGSNo: String,
+  salary: Number,
 });
 
 const qualificationDetailsSchema = new Schema({
@@ -68,24 +69,6 @@ const experienceSchema = new Schema({
   designation: String,
   subjects: [String],
   salary: Number,
-});
-
-const familySchema = new Schema({
-  memberName: String,
-  relation: String,
-  dob: Date,
-  age: Number,
-  aadharNo: Number,
-  insuranceName: String,
-  insuranceNo: String,
-});
-
-const otherDetailsSchema = new Schema({
-  religion: String,
-  category: String,
-  cast: String,
-  bloodGroup: String,
-  emergencyContactNo: Number,
 });
 
 const employeeSchema = new Schema({
@@ -168,8 +151,6 @@ const employeeSchema = new Schema({
   personalDetails: { type: personalDetailsSchema, default: {} },
   qualificationDetails: { type: qualificationDetailsSchema, default: {} },
   experience: [experienceSchema],
-  familyDetails: [familySchema],
-  otherDetails: { type: otherDetailsSchema, default: {} },
 });
 
 export default model("Employees", employeeSchema);

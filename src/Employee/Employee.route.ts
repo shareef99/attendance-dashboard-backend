@@ -10,11 +10,11 @@ import {
   updateSSCDetails,
   getEmployeesByDepartment,
   getEmployeesWithLeaves,
-  approveLeaveByHod,
   approveLeaveByPrincipal,
   getEmployeesWithUpcomingLeaves,
   updatePersonalDetails,
   getCurrentEmployee,
+  updateLeaveStatus,
 } from "./employee.controller";
 
 // Path: /employees
@@ -52,13 +52,13 @@ employeeRouter.put("/qualification", authenticateToken, updateSSCDetails);
 employeeRouter.put(
   "/approve-leave/byHod",
   authenticateToken,
-  approveLeaveByHod
+  updateLeaveStatus
 );
-employeeRouter.put(
-  "/approve-leave/byPrincipal",
-  authenticateToken,
-  approveLeaveByPrincipal
-);
+// employeeRouter.put(
+//   "/approve-leave/byPrincipal",
+//   authenticateToken,
+//   approveLeaveByPrincipal
+// );
 
 employeeRouter.delete("/", authenticateToken, checkIdExists, deleteEmployee);
 

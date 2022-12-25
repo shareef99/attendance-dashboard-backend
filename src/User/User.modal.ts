@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
+import { Schema, model } from "mongoose";
 
-const userModel = new mongoose.Schema({
+const userModel = new Schema({
   name: { type: String, require: true },
   email: { type: String, require: true, unique: true },
   password: { type: String, require: true },
 });
 
-export default mongoose.model("Users", userModel);
+export default model("Users", userModel);

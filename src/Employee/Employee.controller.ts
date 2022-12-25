@@ -58,7 +58,9 @@ const personalSchema = z
     pfNo: z.string().optional(),
     aadharNo: z.number().optional(),
     RTGSNo: z.string().optional(),
+    salary: z.number().optional(),
     emp_type: z.string(),
+    role: z.number(),
   })
   .strict();
 
@@ -190,6 +192,7 @@ export const updatePersonalDetails: RequestHandler = async (req, res) => {
           designation: data.designation,
           mobile_no: data.mobile_no,
           joining_date: data.joining_date,
+          role: data.role,
           "personalDetails.gender": data.gender,
           "personalDetails.dob": data.dob,
           "personalDetails.married": data.married,
@@ -201,6 +204,7 @@ export const updatePersonalDetails: RequestHandler = async (req, res) => {
           "personalDetails.pfNo": data.pfNo,
           "personalDetails.aadharNo": data.aadharNo,
           "personalDetails.RTGSNo": data.RTGSNo,
+          "personalDetails.salary": data.salary,
         },
       }
     );
@@ -393,24 +397,38 @@ export const getEmployeesWithUpcomingLeaves: RequestHandler = async (
   }
 };
 
-export const approveLeaveByHod: RequestHandler = async (req, res) => {
+export const updateLeaveStatus: RequestHandler = async (req, res) => {
   try {
     const user = req.user;
 
-    if (user.role > 2) {
-      return res
-        .status(400)
-        .json({ message: "You don't have permission to approve the leave" });
-    }
-
     const emp_id = req.query.emp_id?.toString();
     const leave_id = req.query.leave_id?.toString();
+    const by = req.query.by?.toString();
+    const status = req.query.status?.toString();
 
     if (!emp_id) {
       return res.status(400).json({ message: "Emp Id is missing" });
     }
     if (!leave_id) {
       return res.status(400).json({ message: "Leave Id is missing" });
+    }
+    if (!by) {
+      return res.status(400).json({ message: "By is missing" });
+    }
+    if (!status) {
+      return res.status(400).json({ message: "Status is missing" });
+    }
+
+    if (by === "hod" && user.role > 2) {
+      return res
+        .status(400)
+        .json({ message: "You don't have permission to approve the leave" });
+    }
+
+    if (by === "principal" && user.role !== 1) {
+      return res
+        .status(400)
+        .json({ message: "You don't have permission to approve the leave" });
     }
 
     const employee = await employeeModel.findOne({
@@ -434,7 +452,7 @@ export const approveLeaveByHod: RequestHandler = async (req, res) => {
             from: leave.from,
             to: leave.to,
             leave_duration: leave.leave_duration,
-            status: "pending-principal",
+            status: status,
           }
         : {
             name: leave.name,
@@ -455,7 +473,7 @@ export const approveLeaveByHod: RequestHandler = async (req, res) => {
       }
     );
 
-    return res.status(400).json({ message: "Approved by HOD" });
+    return res.status(200).json({ message: `${status} by ${by} successfully` });
   } catch (err: any) {
     return res
       .status(500)
