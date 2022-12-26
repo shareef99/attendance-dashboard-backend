@@ -3,7 +3,6 @@ import { RequestHandler } from "express";
 import employeeService from "./employee.service";
 import { z } from "zod";
 import employeeModel from "./employee.model";
-import { leaveType } from "../leaves/leave.controller";
 
 const employeeSchema = z
   .object({
@@ -193,6 +192,7 @@ export const updatePersonalDetails: RequestHandler = async (req, res) => {
           mobile_no: data.mobile_no,
           joining_date: data.joining_date,
           role: data.role,
+          salary: data.salary,
           "personalDetails.gender": data.gender,
           "personalDetails.dob": data.dob,
           "personalDetails.married": data.married,
@@ -204,7 +204,6 @@ export const updatePersonalDetails: RequestHandler = async (req, res) => {
           "personalDetails.pfNo": data.pfNo,
           "personalDetails.aadharNo": data.aadharNo,
           "personalDetails.RTGSNo": data.RTGSNo,
-          "personalDetails.salary": data.salary,
         },
       }
     );
@@ -284,8 +283,15 @@ export const updateSSCDetails: RequestHandler = async (req, res) => {
 export const deleteEmployee: RequestHandler = async (req, res) => {
   try {
     const id = req.query.id;
-    await employeeModel.findOneAndDelete({ emp_id: id });
-    res.status(200).json({ message: `Employee Deleted with ${id}` });
+    const deleteRes = await employeeModel.findOneAndDelete({ emp_id: id });
+
+    if (!deleteRes) {
+      return res
+        .status(400)
+        .json({ message: `Failed to delete employee with ID: ${id}` });
+    }
+
+    return res.status(200).json({ message: `Employee Deleted with ${id}` });
   } catch (err: any) {
     return res
       .status(500)
@@ -293,260 +299,49 @@ export const deleteEmployee: RequestHandler = async (req, res) => {
   }
 };
 
-export const applyForLeave: RequestHandler = async (req, res) => {
-  try {
-    const validationRes = validateReq(leaveSchema.safeParse(req.body));
+// export const getEmployeesWithUpcomingLeaves: RequestHandler = async (
+//   req,
+//   res
+// ) => {
+//   try {
+//     const user = req.user;
 
-    if (validationRes.error) {
-      res.status(400).json({ message: validationRes });
-    }
+//     const employees = await employeeModel
+//       .find({ department: user.department })
+//       .select("-password");
 
-    const id = req.query.id?.toString();
+//     // I don't want to use any but sir wants the project to be end as soon as possible so I have no choice
+//     // Don't blame the developer blame Bari sir
+//     const employeesWithUpcomingLeaves: Array<{
+//       emp_id: string;
+//       name: string;
+//       leave: {
+//         name: string;
+//         status: string;
+//         shortname: string;
+//         from: Date;
+//         to: Date;
+//         leave_duration: string;
+//       };
+//     }> = [];
 
-    await employeeModel.findOneAndUpdate(
-      { emp_id: id },
-      {
-        $push: { leaves: { ...validationRes.value, status: "pending-hod" } },
-      }
-    );
-    res.status(201).json({ message: "Apply for leave successfully." });
-  } catch (err: any) {
-    return res
-      .status(500)
-      .json({ message: err.message || "something went wrong" });
-  }
-};
+//     employees.forEach((employee) => {
+//       for (const leave of employee.leaves) {
+//         if (+leave.from > Date.now()) {
+//           employeesWithUpcomingLeaves.push({
+//             emp_id: employee.emp_id!,
+//             name: employee.name!,
+//             leave,
+//           });
+//           break;
+//         }
+//       }
+//     });
 
-export const getEmployeesWithLeaves: RequestHandler = async (req, res) => {
-  try {
-    const user = req.user;
-    const allEmployees = await employeeModel
-      .find({ department: user.department })
-      .select("-password -personalDetails -qualificationDetails -otherDetails");
-    let employeesWithLeaves: any[] = [];
-
-    allEmployees
-      .filter((employee) => employee.leaves.length > 0)
-      .forEach((employee) =>
-        employee.leaves.forEach((leave) =>
-          employeesWithLeaves.push({
-            // @ts-ignore
-            leave_id: leave._id,
-            emp_id: employee.emp_id,
-            name: employee.name,
-            department: employee.department,
-            from: leave.from,
-            to: leave.to,
-            leave_duration: leave.leave_duration,
-            status: leave.status,
-          })
-        )
-      );
-    return res.status(200).json({ employees: employeesWithLeaves });
-  } catch (err: any) {
-    return res
-      .status(500)
-      .json({ message: err.message || "something went wrong" });
-  }
-};
-
-export const getEmployeesWithUpcomingLeaves: RequestHandler = async (
-  req,
-  res
-) => {
-  try {
-    const user = req.user;
-
-    const employees = await employeeModel
-      .find({ department: user.department })
-      .select("-password");
-
-    // I don't want to use any but sir wants the project to be end as soon as possible so I have no choice
-    // Don't blame the developer blame Bari sir
-    const employeesWithUpcomingLeaves: Array<{
-      emp_id: string;
-      name: string;
-      leave: {
-        name: string;
-        status: string;
-        shortname: string;
-        from: Date;
-        to: Date;
-        leave_duration: string;
-      };
-    }> = [];
-
-    employees.forEach((employee) => {
-      for (const leave of employee.leaves) {
-        if (+leave.from > Date.now()) {
-          employeesWithUpcomingLeaves.push({
-            emp_id: employee.emp_id!,
-            name: employee.name!,
-            leave,
-          });
-          break;
-        }
-      }
-    });
-
-    return res.status(200).json({ employees: employeesWithUpcomingLeaves });
-  } catch (err: any) {
-    return res.status(500).json({
-      err: err.message || "Something went wrong.",
-    });
-  }
-};
-
-export const updateLeaveStatus: RequestHandler = async (req, res) => {
-  try {
-    const user = req.user;
-
-    const emp_id = req.query.emp_id?.toString();
-    const leave_id = req.query.leave_id?.toString();
-    const by = req.query.by?.toString();
-    const status = req.query.status?.toString();
-
-    if (!emp_id) {
-      return res.status(400).json({ message: "Emp Id is missing" });
-    }
-    if (!leave_id) {
-      return res.status(400).json({ message: "Leave Id is missing" });
-    }
-    if (!by) {
-      return res.status(400).json({ message: "By is missing" });
-    }
-    if (!status) {
-      return res.status(400).json({ message: "Status is missing" });
-    }
-
-    if (by === "hod" && user.role > 2) {
-      return res
-        .status(400)
-        .json({ message: "You don't have permission to approve the leave" });
-    }
-
-    if (by === "principal" && user.role !== 1) {
-      return res
-        .status(400)
-        .json({ message: "You don't have permission to approve the leave" });
-    }
-
-    const employee = await employeeModel.findOne({
-      emp_id: emp_id,
-    });
-
-    if (!employee) {
-      return res
-        .status(400)
-        .json({ message: "Can't find emp with id " + emp_id });
-    }
-
-    const updatedLeaves = employee.leaves.map((leave) =>
-      // Every MongoDb object has _id property. IDK why TypeScript is screaming it doesn't have _id property.
-      // Must use ==, because mongodb _id is not string but leave_id is string
-      // @ts-ignore
-      leave._id == leave_id
-        ? {
-            name: leave.name,
-            shortname: leave.shortname,
-            from: leave.from,
-            to: leave.to,
-            leave_duration: leave.leave_duration,
-            status: status,
-          }
-        : {
-            name: leave.name,
-            shortname: leave.shortname,
-            from: leave.from,
-            to: leave.to,
-            leave_duration: leave.leave_duration,
-            status: leave.status,
-          }
-    );
-
-    await employeeModel.findOneAndUpdate(
-      { emp_id: emp_id },
-      {
-        $set: {
-          leaves: updatedLeaves,
-        },
-      }
-    );
-
-    return res.status(200).json({ message: `${status} by ${by} successfully` });
-  } catch (err: any) {
-    return res
-      .status(500)
-      .json({ message: err.message || "Something went wrong" });
-  }
-};
-
-export const approveLeaveByPrincipal: RequestHandler = async (req, res) => {
-  try {
-    const user = req.user;
-
-    if (user.role !== 1) {
-      return res
-        .status(400)
-        .json({ message: "You don't have permission to approve the leave" });
-    }
-
-    const emp_id = req.query.emp_id?.toString();
-    const leave_id = req.query.leave_id?.toString();
-
-    if (!emp_id) {
-      return res.status(400).json({ message: "Emp Id is missing" });
-    }
-    if (!leave_id) {
-      return res.status(400).json({ message: "Leave Id is missing" });
-    }
-
-    const employee = await employeeModel.findOne({
-      emp_id: emp_id,
-    });
-
-    if (!employee) {
-      return res
-        .status(400)
-        .json({ message: "Can't find emp with id " + emp_id });
-    }
-
-    const updatedLeaves = employee.leaves.map((leave) =>
-      // Every MongoDb object has _id property. IDK why TypeScript is screaming it doesn't have _id property.
-      // Must use ==, because mongodb _id is not string but leave_id is string
-      // @ts-ignore
-      leave._id == leave_id
-        ? {
-            name: leave.name,
-            shortname: leave.shortname,
-            from: leave.from,
-            to: leave.to,
-            leave_duration: leave.leave_duration,
-            status: "approved",
-          }
-        : {
-            name: leave.name,
-            shortname: leave.shortname,
-            from: leave.from,
-            to: leave.to,
-            leave_duration: leave.leave_duration,
-            status: leave.status,
-          }
-    );
-
-    await employeeModel.findOneAndUpdate(
-      { emp_id: emp_id },
-      {
-        $set: {
-          leaves: updatedLeaves,
-        },
-      }
-    );
-
-    return res.status(400).json({ message: "Approved by Principal" });
-  } catch (err: any) {
-    return res
-      .status(500)
-      .json({ message: err.message || "Something went wrong" });
-  }
-};
+//     return res.status(200).json({ employees: employeesWithUpcomingLeaves });
+//   } catch (err: any) {
+//     return res.status(500).json({
+//       err: err.message || "Something went wrong.",
+//     });
+//   }
+// };

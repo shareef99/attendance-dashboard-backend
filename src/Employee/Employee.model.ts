@@ -18,7 +18,6 @@ const personalDetailsSchema = new Schema({
   pfNo: String,
   aadharNo: Number,
   RTGSNo: String,
-  salary: Number,
 });
 
 const qualificationDetailsSchema = new Schema({
@@ -117,31 +116,31 @@ const employeeSchema = new Schema({
     type: Number,
     require: true,
   },
+  salary: {
+    type: Number,
+    default: null,
+  },
+  deducted_salary: {
+    type: Number,
+    default: 0,
+  },
+  final_salary: {
+    type: Number,
+    default: null,
+  },
+  is_salary_updated: {
+    type: Boolean,
+    default: false,
+  },
   leaves: {
     type: [
       {
-        name: {
-          type: String,
-          required: true,
-        },
         shortname: {
           type: String,
           required: true,
         },
-        from: {
-          type: Date,
-          required: true,
-        },
-        to: {
-          type: Date,
-          required: true,
-        },
-        leave_duration: {
-          type: String,
-          required: true,
-        },
-        status: {
-          type: String,
+        noOfLeavesTaken: {
+          type: Number,
           required: true,
         },
       },

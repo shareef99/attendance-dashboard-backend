@@ -8,6 +8,7 @@ const leaveSchema = new Schema({
   shortname: {
     type: String,
     required: true,
+    unique: true,
   },
   leave_type: {
     type: String,
