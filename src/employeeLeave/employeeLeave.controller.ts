@@ -245,23 +245,24 @@ export const updateLeaveByPrincipal: RequestHandler = async (req, res) => {
     if (!currentLeave) {
       currentLeave = {
         shortname: data.leave_shortname,
-        noOfLeavesTaken: 0,
+        no_of_leaves_taken: 0,
       };
       employeeLeaves.push(currentLeave);
     }
 
-    const totalLeavesTaken = currentLeave.noOfLeavesTaken + data.number_of_days;
-    currentLeave.noOfLeavesTaken = totalLeavesTaken;
+    const totalLeavesTaken =
+      currentLeave.no_of_leaves_taken + data.number_of_days;
+    currentLeave.no_of_leaves_taken = totalLeavesTaken;
 
     employeeLeaves = employeeLeaves.map((employeeLeave) =>
       employeeLeave.shortname === currentLeave?.shortname
         ? {
             shortname: employeeLeave.shortname,
-            noOfLeavesTaken: totalLeavesTaken,
+            no_of_leaves_taken: totalLeavesTaken,
           }
         : {
             shortname: employeeLeave.shortname,
-            noOfLeavesTaken: employeeLeave.noOfLeavesTaken,
+            no_of_leaves_taken: employeeLeave.no_of_leaves_taken,
           }
     );
 

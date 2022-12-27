@@ -139,7 +139,7 @@ const employeeSchema = new Schema({
           type: String,
           required: true,
         },
-        noOfLeavesTaken: {
+        no_of_leaves_taken: {
           type: Number,
           required: true,
         },
